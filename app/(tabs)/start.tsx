@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   Module,
   Modal,
+  Alert,
+  Platform,
 } from "react-native"; // Import React Native components
 import tw from "twrnc";
 
@@ -18,7 +20,8 @@ import { CHARACTERISTIC } from "@/enum/characteristic"; // Import BLE characteri
 import ShowPad from "../running";
 import { Device } from "react-native-ble-plx";
 import { light } from "@eva-design/eva";
-import index from "..";
+import FullResult from "../result";
+import { FA5Style } from "@expo/vector-icons/build/FontAwesome5";
 
 const StartGame = () => {
   // Destructure positions from the IconPosition context
@@ -148,118 +151,6 @@ const StartGame = () => {
   const isTimeMode = lightOut === "Timeout" || lightOut === "Hit or Timeout";
   const isHitModeDur = duration === "Hit" || duration === "Hit or Timeout";
   const isTimeModeDur = duration === "Timeout" || duration === "Hit or Timeout";
-
-  const Result = ({
-    isHitMode,
-    isTimeMode,
-    isHitModeDur,
-    isTimeModeDur,
-    onClose,
-    userhitcount,
-  }: {
-    isHitMode: boolean;
-    isTimeMode: boolean;
-    isHitModeDur: boolean;
-    isTimeModeDur: boolean;
-    onClose: () => void;
-    userhitcount: number;
-  }) => (
-    <Modal animationType="slide" transparent={true} visible={showResult}>
-      <View style={styles.overlay}>
-        <View style={styles.detailBox}>
-          <Text style={styles.sectionTitle}>Training Detail</Text>
-          <Text style={styles.separator}>---------------</Text>
-
-          <View style={styles.col}>
-            <Text style={styles.label}>Lights Out</Text>
-            <View style={styles.row}>
-              <Text style={styles.label}>• Mode </Text>
-              <Text style={styles.output}>{lightOut}</Text>
-            </View>
-            {isTimeMode && (
-              <View style={styles.row}>
-                <Text style={styles.label}>• Time out </Text>
-                <Text style={styles.output}>{timeout}</Text>
-              </View>
-            )}
-            {isHitMode && (
-              <View style={styles.row}>
-                <Text style={styles.label}>•Hit count</Text>
-                <Text style={styles.output}>
-                  {hitCount.toFixed(2) + " times" || "end Game"}
-                </Text>
-              </View>
-            )}
-          </View>
-
-          <View style={styles.row}>
-            <Text style={styles.label}>Light Delay Time</Text>
-            <Text style={styles.output}>
-              {delaytime.toFixed(2) || 0} seconds
-            </Text>
-          </View>
-
-          <View style={styles.col}>
-            <Text style={styles.label}>Duration</Text>
-            <View style={styles.row}>
-              <Text style={styles.label}>• Mode</Text>
-              <Text style={styles.output}>{duration || "end Game"}</Text>
-            </View>
-            {isTimeModeDur && (
-              <View style={styles.row}>
-                <Text style={styles.label}>• Time out</Text>
-                <Text style={styles.output}>
-                  {minDuration * 60 + secDuration + " seconds" || "end Game"}
-                </Text>
-              </View>
-            )}
-            {isHitModeDur && (
-              <View style={styles.row}>
-                <Text style={styles.label}>• Hit count</Text>
-                <Text style={styles.output}>
-                  {hitduration.toFixed(2) + "times" || "end Game"}
-                </Text>
-              </View>
-            )}
-          </View>
-
-          <Text style={styles.sectionTitle}>Measurement</Text>
-          <Text style={styles.separator}>---------------</Text>
-
-          <View style={styles.row}>
-            <Text style={styles.label}>Total time</Text>
-            <Text style={styles.output}>
-              {playTime.toFixed(2) + " seconds"}{" "}
-            </Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Hit Count</Text>
-            {/*  */}
-            <Text style={styles.output}>{userHitCount} times</Text>
-          </View>
-
-          <View style={styles.row}>
-            {isHitMode && (
-              <View style={styles.row}>
-                <Text style={styles.label}>• Hit Percentage</Text>
-                <Text style={styles.output}>
-                  {hitduration > 0
-                    ? Math.min((userHitCount / hitduration) * 100, 100).toFixed(
-                        2
-                      ) + " %"
-                    : "end Game"}
-                </Text>
-              </View>
-            )}
-          </View>
-
-          <TouchableOpacity style={styles.button} onPress={onClose}>
-            <Text style={styles.buttonText}>Finish</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
-  );
 
   const handleCloseResult = () => setShowresult(false);
   //_______________________________________________________________________________________game play function
@@ -769,7 +660,8 @@ const StartGame = () => {
     let hit = 0;
     setUserHitCount(0);
     setPressButton(true);
-    startTimeRef.current = Date.now();
+    setPlayTime(0);
+
     let startTime = Date.now();
 
     if (lightOut === "Hit") {
@@ -818,6 +710,7 @@ const StartGame = () => {
             delaytime * 1000
           );
           setShowresult(true);
+          // setShowresult(!stopGame);
         }}
       >
         <Text style={styles.buttonText}>
@@ -832,13 +725,14 @@ const StartGame = () => {
           style={styles.playButton}
           onPress={() => {
             setIsPlaying(false);
-            setUserHitCount(0);
+            setPressButton(false);
             connectedDevice.forEach(async (deviceObj) => {
               if (deviceObj && deviceObj.device) {
                 await blink(deviceObj.device);
               }
             });
-            setShowresult(false);
+
+            // setStopGame(true);
           }}
         >
           <Text style={styles.buttonText}>
@@ -855,18 +749,31 @@ const StartGame = () => {
       </View>
 
       {/* Display all pads based on their positions */}
-      <ShowPad isPlaying={isPlaying} activePadIndex={activePadIndex}></ShowPad>
+      <ShowPad
+        isPlaying={isPlaying}
+        activePadIndex={activePadIndex + 1}
+      ></ShowPad>
 
       {/* Display the current hit count */}
 
       {showResult && (
-        <Result
+        <FullResult
+          showResult={showResult}
           isHitMode={isHitMode}
           isTimeMode={isTimeMode}
           isHitModeDur={isHitModeDur}
           isTimeModeDur={isTimeModeDur}
           onClose={handleCloseResult}
-          userhitcount={userHitCount}
+          lightOut={lightOut}
+          timeout={timeout}
+          hitCount={hitCount}
+          delayTime={delaytime}
+          duration={duration}
+          minDuration={minDuration}
+          secDuration={secDuration}
+          hitDuration={hitduration}
+          playTime={playTime}
+          userHitCount={userHitCount}
         />
       )}
       {/* </TouchableOpacity> */}
@@ -874,8 +781,6 @@ const StartGame = () => {
   );
 };
 
-// Define the styles for the component
-// Define the styles for the component
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#e1f4f3" }, // Container style with background color
   header: {
