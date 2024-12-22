@@ -28,6 +28,19 @@ export default function TabLayout() {
 							}}
 						/>
 						<Tabs.Screen
+							name="Mode"
+							options={{
+								tabBarLabel: "MODE CREATE",
+								tabBarIcon: ({ color, size }) => (
+									<FontAwesome
+										name="hourglass-start"
+										size={size}
+										color={color}
+									/>
+								),
+							}}
+						/>
+						<Tabs.Screen
 							name="training"
 							options={{
 								tabBarLabel: "training",
