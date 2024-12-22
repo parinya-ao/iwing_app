@@ -4,7 +4,6 @@ import {
 	Text,
 	TouchableOpacity,
 	StyleSheet,
-	Image,
 	ScrollView,
 } from "react-native";
 // import Slider from "@react-native-community/slider";
@@ -13,7 +12,6 @@ import { Slider } from "@rneui/themed";
 import CounterInput from "react-native-counter-input";
 //counter lib usage:https://github.com/WrathChaos/react-native-counter-input
 import tw from "twrnc";
-import { light } from "@eva-design/eva";
 import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
 import { useNavigation } from "@react-navigation/native";
 export default function App() {

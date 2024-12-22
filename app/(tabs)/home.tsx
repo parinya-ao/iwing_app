@@ -3,18 +3,16 @@ import {
 	StyleSheet,
 	Text,
 	View,
-	Modal,
 	TouchableOpacity,
 	FlatList,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useBleManager } from "./context/blecontext";
 import { CHARACTERISTIC } from "@/enum/characteristic";
-import { SelectList } from "react-native-dropdown-select-list";
-import { base64toDec, base64toDecManu, hexToBase64 } from "@/util/encode";
-import tw, { style } from "twrnc";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { BleManager, Device } from "react-native-ble-plx";
+import { base64toDecManu } from "@/util/encode";
+import tw from "twrnc";
+import { MaterialIcons } from "@expo/vector-icons";
+import { Device } from "react-native-ble-plx";
 
 // Define the type for the module state
 type ConnectedDevice = Device | null;
@@ -59,6 +57,11 @@ export default function Home() {
 		await writeCharacteristic(device, CHARACTERISTIC.LED, "AAAA");
 	};
 
+	const playSound = async (device: Device) => {
+		console.log("Playing music");
+		await writeCharacteristic(device, CHARACTERISTIC.MUSIC, "AAF/");
+	};
+
 	const DeviceCard = ({
 		device,
 		pad_no,
@@ -78,9 +81,7 @@ export default function Home() {
 					</TouchableOpacity>
 					<TouchableOpacity
 						style={styles.identify_buttonBelow}
-						onPress={async () => {
-							console.log("playing sound");
-						}}
+						onPress={async () => await playSound(device)} //เสียงยังไม่ออกครับ
 					>
 						<Text style={{ color: "#EDEEF1" }}>Sound</Text>
 					</TouchableOpacity>
