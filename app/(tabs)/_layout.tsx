@@ -30,17 +30,13 @@ export default function TabLayout() {
 						<Tabs.Screen
 							name="Mode"
 							options={{
-								tabBarLabel: "MODE CREATE",
+								tabBarLabel: "Mode",
 								tabBarIcon: ({ color, size }) => (
-									<FontAwesome
-										name="hourglass-start"
-										size={size}
-										color={color}
-									/>
+									<FontAwesome5 name="running" size={size} color={color} />
 								),
 							}}
 						/>
-						<Tabs.Screen
+						{/* <Tabs.Screen
 							name="training"
 							options={{
 								tabBarLabel: "training",
@@ -48,7 +44,7 @@ export default function TabLayout() {
 									<FontAwesome5 name="running" size={size} color={color} />
 								),
 							}}
-						/>
+						/> */}
 						<Tabs.Screen
 							name="setting"
 							options={{
@@ -62,7 +58,7 @@ export default function TabLayout() {
 						<Tabs.Screen
 							name="start"
 							options={{
-								tabBarLabel: "Test Running",
+								tabBarLabel: "Start",
 								tabBarIcon: ({ color, size }) => (
 									<FontAwesome
 										name="hourglass-start"
