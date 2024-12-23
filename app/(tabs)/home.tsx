@@ -24,7 +24,6 @@ export const isCenter = async (
   module: ModuleHome[],
   readCharacteristic: Function
 ) => {
-
   const right = await readCharacteristic(
     module[3]?.deviceId as string,
     CHARACTERISTIC.IWING_TRAINERPAD,
@@ -57,10 +56,15 @@ export default function Home() {
   const isCalibratingRef = React.useRef(isCalibrating);
 
   const testMusic = async (index: number) => {
-    writeCharacteristic(
+    await writeCharacteristic(
       connectedDevice[index]?.device as Device,
       CHARACTERISTIC.MUSIC,
-      hexToBase64("616161")
+      "RQJSAkUCUgJFAlIIRQJSAkUCUgJFAlII"
+    );
+    await writeCharacteristic(
+      connectedDevice[index]?.device as Device,
+      CHARACTERISTIC.MUSIC,
+      hexToBase64("0")
     );
   };
 
@@ -267,9 +271,19 @@ export default function Home() {
                     selectedModule - 1 === 4
                   ) {
                     console.log("set Default");
-                    await connectedDevice[selectedModule - 1]?.changeMode(0, 0, 1, 2);
+                    await connectedDevice[selectedModule - 1]?.changeMode(
+                      0,
+                      0,
+                      1,
+                      2
+                    );
                   } else if (selectedModule) {
-                    await connectedDevice[selectedModule - 1]?.changeMode(0, 1, 0, 0);
+                    await connectedDevice[selectedModule - 1]?.changeMode(
+                      0,
+                      1,
+                      0,
+                      0
+                    );
                   }
                 }}
               >

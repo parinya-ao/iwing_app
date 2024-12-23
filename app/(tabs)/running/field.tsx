@@ -44,9 +44,7 @@ const Field = ({
   threR1,
   threR2,
 }: FieldProps) => {
-  const {
-    connectedDevice,
-  } = useBleManager();
+  const { connectedDevice } = useBleManager();
   const [circleColors, setCircleColors] = useState({
     R1: "red",
     R2: "red",
@@ -78,7 +76,7 @@ const Field = ({
   const [circleSequence, setCircleSequence] = useState<CircleKey[]>([]);
 
   useEffect(() => {
-    console.log(`threR1: `,threR1);
+    console.log(`threR1: `, threR1);
     connectedDevice[4]?.changeMode(0, 0, 0, 2);
     Miss.current = 0;
     let sequence: number[] = [];
@@ -115,11 +113,18 @@ const Field = ({
 
       sequence = shuffleArray(sequence);
     }
+    const cancelToken = { isCancelled: false };
     console.log(sequence);
-    play(sequence);
+    play(sequence, cancelToken);
+    return () => {
+      cancelToken.isCancelled = true;
+    };
   }, []);
 
-  const play = async (sequence: number[]) => {
+  const play = async (
+    sequence: number[],
+    cancelToken: { isCancelled: boolean }
+  ) => {
     console.log("sequence", sequence);
     let lastTimestamp = Date.now();
 
@@ -133,9 +138,31 @@ const Field = ({
         ? "L2"
         : "R2";
     let isNeedToHit = true;
+    const withCancellation = async (
+      promise: Promise<void> | undefined,
+      cancelToken: { isCancelled: boolean }
+    ) => {
+      return new Promise((resolve, reject) => {
+        const checkCancellation = () => {
+          if (cancelToken.isCancelled) reject(new Error("Cancelled"));
+        };
+        const interval = setInterval(checkCancellation, 10);
+        if (!promise) return;
+        promise
+          .then((result) => {
+            clearInterval(interval);
+            resolve(result);
+          })
+          .catch((err) => {
+            clearInterval(interval);
+            reject(err);
+          });
+      });
+    };
     while (index < sequence.length && !isStopped) {
+      if (cancelToken.isCancelled) break;
       if (isStopped) break;
-      console.log()
+      console.log();
       lastTimestamp = Date.now();
       if (isNeedToHit) {
         pos =
@@ -150,7 +177,16 @@ const Field = ({
           ...prevColors,
           [pos]: "green",
         }));
-        await connectedDevice[sequence[index]]?.waitForVibration();
+        // await connectedDevice[sequence[index]]?.waitForVibration();
+        try {
+          await withCancellation(
+            connectedDevice[sequence[index]]?.waitForVibration(),
+            cancelToken
+          );
+        } catch (e) {
+          console.log("Cancelled");
+          break;
+        }
         let timeDiff = (Date.now() - lastTimestamp) / 1000;
         console.log("timeDiff", timeDiff);
         interactionTimes.current.push({
@@ -303,11 +339,10 @@ const Field = ({
       interactionTimes={interactionTimes.current}
       totalHit={interactionTimes.current.length}
       miss={Miss.current}
-      onClose={() =>  {
+      onClose={() => {
         setIsStopped(false);
-        setShowResultScreen(false)
-      }
-      }
+        setShowResultScreen(false);
+      }}
     />
   );
 };
