@@ -7,6 +7,7 @@ import {
 	TouchableOpacity,
 	Animated,
 } from "react-native";
+import tw from "twrnc";
 import { MaterialIcons, Entypo } from "@expo/vector-icons";
 import CounterInput from "react-native-counter-input";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
@@ -217,7 +218,7 @@ const ModeScreen: React.FC = () => {
 							</Text>
 							<View style={styles.dropdown_container}>
 								<Dropdown
-									data={[1, 2, 3, 4, 5]}
+									data={[1, 2, 3, 4, 5]} // data
 									placeholder="Select timeout"
 									onSelect={(value: number) =>
 										set_light_out_data({ ...light_out_data, timeout: value })
@@ -233,7 +234,7 @@ const ModeScreen: React.FC = () => {
 							</Text>
 							<View style={styles.dropdown_container}>
 								<Dropdown
-									data={[1, 2, 3, 4, 5, 6]}
+									data={[1, 2, 3, 4, 5, 6]} // data
 									placeholder="Select hit count"
 									onSelect={(value: number) =>
 										set_light_out_data({ ...light_out_data, hitCount: value })
@@ -364,9 +365,19 @@ const ModeScreen: React.FC = () => {
 
 	return (
 		<ScrollView style={styles.scroll_view}>
+			<Text
+				style={[
+					tw`text-center font-bold text-white my-4 mt-8 shadow-lg`,
+					{
+						backgroundColor: "#419E68",
+						fontSize: 36,
+						marginHorizontal: "-10%",
+					},
+				]}
+			>
+				Mode
+			</Text>
 			<View style={styles.container}>
-				<Text style={styles.header}>Mode</Text>
-
 				<ModeOption
 					mode_type="Light Out"
 					mode_selected={light_out_data.lightOut}
@@ -420,7 +431,7 @@ const styles = StyleSheet.create({
 	option_item: {
 		padding: 10,
 		borderRadius: 5,
-		backgroundColor: "#f0f0f0",
+		backgroundColor: "#f3da74",
 		borderWidth: 1,
 		borderColor: "#ddd",
 	},
@@ -428,11 +439,10 @@ const styles = StyleSheet.create({
 		color: "#ffffff",
 	},
 	selected_option: {
-		backgroundColor: "#4caf50",
-		borderColor: "#4caf50",
+		backgroundColor: "#000000",
 	},
 	finish_button: {
-		backgroundColor: "#4caf50",
+		backgroundColor: "#545454",
 		padding: 15,
 		borderRadius: 10,
 		alignItems: "center",

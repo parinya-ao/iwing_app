@@ -11,6 +11,7 @@ import { useBleManager } from "./context/blecontext";
 import { CHARACTERISTIC } from "@/enum/characteristic";
 import { base64toDecManu } from "@/util/encode";
 import tw from "twrnc";
+import { hexToBase64 } from "@/util/encode";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Device } from "react-native-ble-plx";
 
@@ -57,9 +58,15 @@ export default function Home() {
 		await writeCharacteristic(device, CHARACTERISTIC.LED, "AAAA");
 	};
 
-	const playSound = async (device: Device) => {
-		console.log("Playing music");
-		await writeCharacteristic(device, CHARACTERISTIC.MUSIC, "AAF/");
+	const playMusic = async (device: Device) => {
+		console.log("Playing music on device:", device.id);
+		await writeCharacteristic(
+			device, // Correct: pass Device object
+			CHARACTERISTIC.MUSIC, // Correct: characteristic first
+			hexToBase64("616161")
+		);
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		await writeCharacteristic(device, CHARACTERISTIC.MUSIC, hexToBase64("0"));
 	};
 
 	const DeviceCard = ({
@@ -81,7 +88,7 @@ export default function Home() {
 					</TouchableOpacity>
 					<TouchableOpacity
 						style={styles.identify_buttonBelow}
-						onPress={async () => await playSound(device)} //เสียงยังไม่ออกครับ
+						onPress={async () => await playMusic(device)}
 					>
 						<Text style={{ color: "#EDEEF1" }}>Sound</Text>
 					</TouchableOpacity>
@@ -189,16 +196,16 @@ const styles = StyleSheet.create({
 	blinkbuttonBelow: {
 		backgroundColor: "#0EA5C9",
 		paddingHorizontal: 16,
-		paddingVertical: 6,
+		paddingVertical: 3,
 		borderRadius: 12,
 		marginTop: "-3%",
 	},
 	identify_buttonBelow: {
 		backgroundColor: "#ff0000",
 		paddingHorizontal: 16,
-		paddingVertical: 6,
+		paddingVertical: 3,
 		borderRadius: 12,
-		marginTop: "-3%", // ระยะห่างจาก icon
+		marginTop: "-3%",
 	},
 	Normal_text: {
 		marginVertical: "8%",
