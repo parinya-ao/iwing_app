@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, MutableRefObject } from "react";
 import {
   View,
   Text,
@@ -55,6 +55,7 @@ const Field = ({
   const [showResultScreen, setShowResultScreen] = useState(false);
   const interactionTimes = useRef<Interaction[]>([]);
   const Miss = useRef(0 as number);
+  const cancelToken = useRef({ isCancelled: false });
 
   const [isStopped, setIsStopped] = useState(false);
 
@@ -72,7 +73,6 @@ const Field = ({
   const R2Count = R2 || 0;
   const L1Count = L1 || 0;
   const L2Count = L2 || 0;
-
   const [circleSequence, setCircleSequence] = useState<CircleKey[]>([]);
 
   useEffect(() => {
@@ -113,17 +113,16 @@ const Field = ({
 
       sequence = shuffleArray(sequence);
     }
-    const cancelToken = { isCancelled: false };
     console.log(sequence);
     play(sequence, cancelToken);
     return () => {
-      cancelToken.isCancelled = true;
+      cancelToken.current.isCancelled = true;
     };
   }, []);
 
   const play = async (
     sequence: number[],
-    cancelToken: { isCancelled: boolean }
+    cancelToken: MutableRefObject<{ isCancelled: boolean }>
   ) => {
     console.log("sequence", sequence);
     let lastTimestamp = Date.now();
@@ -160,7 +159,7 @@ const Field = ({
       });
     };
     while (index < sequence.length && !isStopped) {
-      if (cancelToken.isCancelled) break;
+      if (cancelToken.current.isCancelled) break;
       if (isStopped) break;
       console.log();
       lastTimestamp = Date.now();
@@ -181,7 +180,7 @@ const Field = ({
         try {
           await withCancellation(
             connectedDevice[sequence[index]]?.waitForVibration(),
-            cancelToken
+            cancelToken.current
           );
         } catch (e) {
           console.log("Cancelled");
@@ -266,6 +265,7 @@ const Field = ({
   };
 
   const handleStopAndShowResult = () => {
+    cancelToken.current.isCancelled = true;
     console.log("interactionTimes", interactionTimes.current);
     setIsStopped(true);
     setShowResultScreen(true);
