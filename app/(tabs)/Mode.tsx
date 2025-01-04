@@ -6,12 +6,17 @@ import {
 	StyleSheet,
 	TouchableOpacity,
 	Animated,
+	Alert, // Added Alert
 } from "react-native";
 import tw from "twrnc";
 import { MaterialIcons, Entypo } from "@expo/vector-icons";
 import CounterInput from "react-native-counter-input";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import Dropdown from "@/components/Dropdown";
+
+const HIT_COUNT_OPTIONS = [5, 10, 15, 20, 25, 30, 50, 100];
+const LIGHT_DELAY_OPTIONS = [0.3, 0.5, 0.8, 1.0, 1.5, 2.0]; // seconds
+const RANDOM_DELAY_RANGE = [0.3, 3.0]; // min/max seconds
 
 interface LightOutData {
 	lightOut: string;
@@ -257,19 +262,28 @@ const ModeScreen: React.FC = () => {
 						Delay: {light_delay_data.delaytime.toFixed(2)} seconds
 					</Text>
 					<Dropdown
-						data={[1.2, 0.5, 1, 2, 3, 4]} // Updated data
+						data={LIGHT_DELAY_OPTIONS}
 						placeholder="Select delay"
 						onSelect={(value: number) =>
 							set_light_delay_data({ ...light_delay_data, delaytime: value })
 						}
+						defaultValue={light_delay_data.delaytime}
+						style={styles.dropdown}
 					/>
 				</View>
 			);
 		} else if (light_delay_data.lightDelay === "Random") {
 			return (
-				<Text style={styles.slider_label}>
-					Random Delay: {light_delay_data.randomDelay?.toFixed(2)} seconds
-				</Text>
+				<View style={styles.slider_container}>
+					<Text style={styles.slider_label}>
+						Random Delay Range: {RANDOM_DELAY_RANGE[0]} -{" "}
+						{RANDOM_DELAY_RANGE[1]} seconds
+					</Text>
+					<Text style={styles.note}>
+						Light will appear randomly between {RANDOM_DELAY_RANGE[0]} and{" "}
+						{RANDOM_DELAY_RANGE[1]} seconds
+					</Text>
+				</View>
 			);
 		}
 		return null;
@@ -280,17 +294,19 @@ const ModeScreen: React.FC = () => {
 			return (
 				<View style={styles.slider_container}>
 					<Text style={styles.slider_label}>
-						Hit Count: {duration_data.hitduration}
+						Hit Count: {duration_data.hitduration} hits
 					</Text>
 					<Dropdown
-						data={[10, 20, 30, 50, 100, 200]} // Dropdown options as numbers
-						placeholder="Select hit count"
+						data={HIT_COUNT_OPTIONS}
+						placeholder="Select number of hits"
 						onSelect={(value: number) =>
 							set_duration_data({
 								...duration_data,
 								hitduration: value,
 							})
 						}
+						defaultValue={duration_data.hitduration}
+						style={styles.dropdown}
 					/>
 				</View>
 			);
@@ -329,7 +345,7 @@ const ModeScreen: React.FC = () => {
 								Hit Count: {duration_data.hitduration}
 							</Text>
 							<Dropdown
-								data={[10, 20, 30, 50, 100, 200]} // Dropdown options as numbers
+								data={HIT_COUNT_OPTIONS}
 								placeholder="Select hit count"
 								onSelect={(value: number) =>
 									set_duration_data({
@@ -337,6 +353,8 @@ const ModeScreen: React.FC = () => {
 										hitduration: value,
 									})
 								}
+								defaultValue={duration_data.hitduration}
+								style={styles.dropdown}
 							/>
 						</>
 					)}
@@ -347,6 +365,14 @@ const ModeScreen: React.FC = () => {
 	};
 
 	const handle_finish = () => {
+		if (
+			!light_out_data.lightOut ||
+			!light_delay_data.lightDelay ||
+			!duration_data.duration
+		) {
+			Alert.alert("ยังเลือกโหมดไม่ครบ", "เลือกโหมดให้ครบเพื่อไปขั้นตอนถัดไป");
+			return;
+		}
 		navigation.navigate("start", {
 			lightOut: light_out_data.lightOut,
 			hitCount: light_out_data.hitCount,
@@ -574,6 +600,18 @@ const styles = StyleSheet.create({
 		fontSize: 14,
 		color: "#333",
 		marginBottom: 8,
+	},
+	dropdown: {
+		backgroundColor: "#f0f0f0",
+		borderRadius: 8,
+		padding: 10,
+		marginTop: 5,
+	},
+	note: {
+		color: "#666",
+		fontSize: 12,
+		marginTop: 5,
+		fontStyle: "italic",
 	},
 });
 
