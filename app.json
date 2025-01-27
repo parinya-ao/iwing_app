@@ -2,7 +2,7 @@
   "expo": {
     "jsEngine": "hermes",
     "name": "iwing",
-    "slug": "iwing",
+    "slug": "trainerpad",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -49,8 +49,12 @@
     },
     "extra": {
       "eas": {
-        "projectId": "881d7b5e-d4b7-4209-a9be-e7f4bb93fc74"
+        "projectId": "7638baeb-22b2-40fa-bfe0-806fa10a2302"
+      },
+      "router": {
+        "origin": false
       }
-    }
+    },
+    "owner": "iwing"
   }
 }
