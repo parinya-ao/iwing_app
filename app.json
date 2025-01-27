@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "iwing",
-    "slug": "iwing",
+    "slug": "button",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -50,7 +50,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "d6179133-2742-449f-bb35-4b304f5d74f4"
+        "projectId": "38a5c2a6-5b53-41e4-b911-b970e9aa5b71"
       },
       "router": {
         "origin": false
@@ -58,6 +58,7 @@
     },
     "updates": {
       "url": "https://u.expo.dev/d6179133-2742-449f-bb35-4b304f5d74f4"
-    }
+    },
+    "owner": "iwing"
   }
 }
