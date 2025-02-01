@@ -29,6 +29,7 @@ type FieldProps = {
 type Interaction = {
   description: string;
   time: number;
+  timeStamp: string;
 };
 const sound = new Audio.Sound();
 const soundMiss = new Audio.Sound();
@@ -191,6 +192,7 @@ const Field = ({
         interactionTimes.current.push({
           description: `Hit to ${pos}`,
           time: timeDiff,
+          timeStamp: new Date().toISOString(),
         });
         await Promise.all([
           connectedDevice[sequence[index]]?.beep(),
@@ -236,6 +238,7 @@ const Field = ({
           interactionTimes.current.push({
             description: `To Center`,
             time: timeDiff,
+            timeStamp: new Date().toISOString(),
           });
         } else {
           let timeDiff = (Date.now() - lastTimestamp) / 1000;
@@ -247,6 +250,7 @@ const Field = ({
           interactionTimes.current.push({
             description: `Miss Center and Hit ${nextPos}`,
             time: timeDiff,
+            timeStamp: new Date().toISOString(),
           });
           Miss.current++;
           index++;

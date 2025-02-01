@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 type Interaction = {
   description: string;
   time: number;
+  timeStamp?: string;
 };
 
 type ResultScreenProps = {
@@ -30,40 +31,64 @@ const ResultScreen = ({
   totalHit = 0,
   miss,
 }: ResultScreenProps) => {
+  // 1) State for showing/hiding the PatternScreen
   const [showRunScreen, setShowRunScreen] = useState(false);
+
+  // 2) State for filters
   const [filters, setFilters] = useState({
     HitTo: true,
     toCenter: true,
     MissHit: true,
   });
 
+  // 3) State for storing the timestamp when this ResultScreen mounts
+  const [gameStartTimestamp, setGameStartTimestamp] = useState("");
+
+  // 4) On mount, capture the current time and format it
+  useEffect(() => {
+    const now = new Date();
+    setGameStartTimestamp(formatDate(now));
+  }, []);
+
+  // 5) Helper function to format date/time as DD-MM-YYYY HH:mm
+  const formatDate = (date: Date) => {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // getMonth() is 0-based
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${day}-${month}-${year} ${hours}:${minutes}`;
+  };
+
+  // Calculate totalTime
   let totalTime = 0;
+  for (let i = 0; i < interactionTimes.length; i++) {
+    totalTime += interactionTimes[i].time;
+  }
 
-  // const totalHitTime = interactionTimes
-  //   .filter((interaction) => interaction.description.startsWith("Hit to"))
-  //   .reduce((acc, interaction) => acc + interaction.time, 0);
-
-    for(let i=0;i<interactionTimes.length;i++){
-      totalTime += interactionTimes[i].time
-    }
-
-  const progress = totalTime > 0 ? Math.min(1 - (miss / totalHit), 1) : 0;
-
+  // Calculate progress for circular progress indicator
+  const progress = totalTime > 0 ? Math.min(1 - miss / totalHit, 1) : 0;
   const radius = 60;
   const strokeWidth = 10;
   const normalizedRadius = radius - strokeWidth / 2;
   const circumference = normalizedRadius * 2 * Math.PI;
   const strokeDashoffset = circumference - progress * circumference;
-  // console.log("result", interactionTimes);
+
+  // Handle "Finish" button
   const handleDonePress = () => {
     setShowRunScreen(true);
   };
 
+  // Filters logic
   const toggleFilter = (filter: "HitTo" | "toCenter" | "MissHit") => {
     setFilters((prevFilters) => {
       const updatedFilters = { ...prevFilters, [filter]: !prevFilters[filter] };
       // Ensure at least one filter is selected
-      if (!updatedFilters.HitTo && !updatedFilters.toCenter && !updatedFilters.MissHit) {
+      if (
+        !updatedFilters.HitTo &&
+        !updatedFilters.toCenter &&
+        !updatedFilters.MissHit
+      ) {
         updatedFilters.HitTo = true;
         updatedFilters.toCenter = true;
         updatedFilters.MissHit = true;
@@ -72,6 +97,7 @@ const ResultScreen = ({
     });
   };
 
+  // Filter interactions based on user-selected filters
   const filteredInteractions = interactionTimes.filter((interaction) => {
     const isHitTo = interaction.description.startsWith("Hit to");
     const isToCenter = interaction.description.endsWith("To Center");
@@ -84,6 +110,7 @@ const ResultScreen = ({
     return false;
   });
 
+  // CSV Export logic
   const saveToCSV = async () => {
     try {
       let directoryUri = "";
@@ -108,20 +135,23 @@ const ResultScreen = ({
       }
 
       // Prepare CSV content
-      const csvHeader = "Description,Time (s)\n";
+      // (added timeStamp column at the end)
+      const csvHeader = "Description,Time (s),Timestamp\n";
       const csvRows = interactionTimes
         .map(
           (interaction) =>
-            `${interaction.description},${interaction.time.toFixed(2)}`
+            `${interaction.description},${interaction.time.toFixed(2)},${
+              interaction.timeStamp || ""
+            }`
         )
         .join("\n");
+
       const csvContent = `${csvHeader}${csvRows}\nTotal Time,${totalTime.toFixed(
         2
       )}`;
 
       // Define the file name
       const fileName = "interaction_times.csv";
-
       let fileUri = "";
 
       if (Platform.OS === "android") {
@@ -136,12 +166,10 @@ const ResultScreen = ({
         await FileSystem.StorageAccessFramework.writeAsStringAsync(
           fileUri,
           csvContent,
-          {
-            encoding: FileSystem.EncodingType.UTF8,
-          }
+          { encoding: FileSystem.EncodingType.UTF8 }
         );
       } else {
-        // For iOS or other platforms, use the standard FileSystem.writeAsStringAsync
+        // For iOS or other platforms, use the standard FileSystem
         fileUri = `${directoryUri}${fileName}`;
         await FileSystem.writeAsStringAsync(fileUri, csvContent, {
           encoding: FileSystem.EncodingType.UTF8,
@@ -156,12 +184,14 @@ const ResultScreen = ({
     }
   };
 
+  // If "Finish" button was pressed, go to PatternScreen
   if (showRunScreen) {
     return <PatternScreen />;
   }
 
   return (
     <>
+      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Result</Text>
       </View>
@@ -174,11 +204,12 @@ const ResultScreen = ({
           marginVertical: 10,
         }}
       >
+        <Text style={{marginTop:6}}>{gameStartTimestamp}</Text>
         <TouchableOpacity
           style={{
             flexDirection: "row",
             alignItems: "center",
-            marginRight: 10,
+            marginLeft: 15, // add some space between timestamp and the save button
           }}
           onPress={saveToCSV}
         >
@@ -189,8 +220,9 @@ const ResultScreen = ({
         </TouchableOpacity>
       </View>
 
+      {/* Main content */}
       <View style={styles.containerResult}>
-        {/* Circular Progress Indicator */}
+        {/* Circular progress indicator */}
         <Svg height={radius * 2} width={radius * 2} style={styles.svgContainer}>
           <Circle
             stroke="#e0e0e0"
@@ -218,25 +250,32 @@ const ResultScreen = ({
             dy=".3em"
             fontSize="16"
             fill="#333"
-            fontWeight= "500"
+            fontWeight="500"
           >
             {`${(progress * 100).toFixed(2)}%`}
           </SvgText>
         </Svg>
 
+        {/* Boxes for total time and misses */}
         <View style={styles.container}>
           <View style={styles.boxContainer}>
-            <View style={[styles.headerBox, {backgroundColor: "#419E68"}]}>
-              <Text style={[styles.titleText, { color: "#ffffff" }]}>เวลารวม</Text>
+            <View style={[styles.headerBox, { backgroundColor: "#419E68" }]}>
+              <Text style={[styles.titleText, { color: "#ffffff" }]}>
+                เวลารวม
+              </Text>
             </View>
             <View style={styles.contentBox}>
-              <Text style={styles.contentText}>{totalTime.toFixed(2)} วินาที</Text>
+              <Text style={styles.contentText}>
+                {totalTime.toFixed(2)} วินาที
+              </Text>
             </View>
           </View>
 
           <View style={styles.boxContainer}>
             <View style={[styles.headerBox, { backgroundColor: "#E74C3C" }]}>
-              <Text style={[styles.titleText, { color: "#ffffff" }]}>ครั้งที่พลาด</Text>
+              <Text style={[styles.titleText, { color: "#ffffff" }]}>
+                ครั้งที่พลาด
+              </Text>
             </View>
             <View style={styles.contentBox}>
               <Text style={styles.contentText}>{miss.toFixed(0)} ครั้ง</Text>
@@ -244,6 +283,7 @@ const ResultScreen = ({
           </View>
         </View>
 
+        {/* Filter checkboxes */}
         <View style={styles.filterContainer}>
           <TouchableOpacity
             onPress={() => toggleFilter("HitTo")}
@@ -257,6 +297,7 @@ const ResultScreen = ({
             />
             <Text style={styles.checkboxLabel}>HitTo</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             onPress={() => toggleFilter("toCenter")}
             style={styles.checkboxContainer}
@@ -269,6 +310,7 @@ const ResultScreen = ({
             />
             <Text style={styles.checkboxLabel}>ToCenter</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             onPress={() => toggleFilter("MissHit")}
             style={styles.checkboxContainer}
@@ -283,6 +325,7 @@ const ResultScreen = ({
           </TouchableOpacity>
         </View>
 
+        {/* List of interactions (filtered) */}
         <ScrollView style={styles.scrollView}>
           <View style={styles.resultContainer}>
             {filteredInteractions.map((interaction, index) => (
@@ -305,6 +348,7 @@ const ResultScreen = ({
           </View>
         </ScrollView>
 
+        {/* Finish button */}
         <TouchableOpacity style={styles.doneButton} onPress={handleDonePress}>
           <Text style={styles.doneButtonText}>Finish</Text>
         </TouchableOpacity>
@@ -314,6 +358,75 @@ const ResultScreen = ({
 };
 
 const styles = StyleSheet.create({
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    backgroundColor: "#419E68",
+    marginTop: 30,
+    height: 60,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 8,
+  },
+  title: {
+    fontSize: 36,
+    fontWeight: "bold",
+    color: "white",
+    textAlign: "center",
+    flex: 1,
+  },
+  containerResult: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    alignItems: "center",
+  },
+  svgContainer: {
+    marginBottom: 20,
+  },
+  container: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  boxContainer: {
+    flex: 1,
+    marginHorizontal: 2,
+  },
+  headerBox: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 5,
+    borderWidth: 2,
+  },
+  contentBox: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 10,
+    borderBottomWidth: 2,
+    borderLeftWidth: 2,
+    borderRightWidth: 2,
+    backgroundColor: "#ffffff",
+  },
+  titleText: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  contentText: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  filterContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "80%",
+    marginBottom: 10,
+  },
   checkboxContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -336,38 +449,9 @@ const styles = StyleSheet.create({
     color: "#333",
     fontWeight: "bold",
   },
-  containerResult: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-    paddingTop: 20,
-    paddingHorizontal: 20,
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: "bold",
-    color: "white",
-    textAlign: "center",
-    flex: 1,
-  },
-  svgContainer: {
-    marginBottom: 20,
-  },
   scrollView: {
     flex: 1,
     width: "100%",
-    marginBottom: 10,
-  },
-  totalTimeContainer: {
-    backgroundColor: "#44bd80",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  filterContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "80%",
     marginBottom: 10,
   },
   resultContainer: {
@@ -400,7 +484,7 @@ const styles = StyleSheet.create({
     textAlign: "right",
     flex: 1,
     paddingRight: 15,
-    fontWeight: "600"
+    fontWeight: "600",
   },
   doneButton: {
     backgroundColor: "#2f855a",
@@ -415,57 +499,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: "#fff",
     fontWeight: "bold",
-  },
-  container: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  boxContainer: {
-    flex: 1,
-    // borderWidth: 2,
-    // borderColor: "#000",
-    marginHorizontal: 2,
-  },
-  headerBox: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 5,
-    // backgroundColor: "#E74C3C"
-    // borderTopWidth: 2,
-    // borderLeftWidth: 2,
-    borderWidth: 2,
-  },
-  contentBox: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 10,
-    borderBottomWidth: 2,
-    borderLeftWidth: 2,
-    borderRightWidth: 2,
-    backgroundColor: "#ffffff"
-  },
-  titleText: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  contentText: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    backgroundColor: "#419E68",
-    marginTop: 30,
-    height: 60,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 8,
   },
 });
 

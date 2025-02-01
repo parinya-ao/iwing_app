@@ -320,22 +320,23 @@ const BLE = () => {
     const isConnecting = connectingDevicesRef.current.has(device.id);
 
     return (
-      <View
-        style={[tw`flex-row items-center p-4 my-2`, styles.deviceContainer]}
-      >
+      <View style={[tw`flex-row items-center p-4 my-2`, styles.deviceContainer]}>
         <Image
           source={require("../../assets/images/device.png")}
           style={tw`w-20 h-20`}
         />
-        <View style={tw`ml-4`}>
+        
+        {/* Ensure text takes up remaining space */}
+        <View style={tw`ml-4 flex-1`}>
           <Text style={tw`text-base font-bold text-black mb-1`}>
             Disconnected Device ID: {device.id}
           </Text>
           <Text style={styles.disconnectedText}>Status: Disconnected</Text>
         </View>
 
+        {/* Adjust button to avoid overlap */}
         <TouchableOpacity
-          style={styles.blinkButton}
+          style={[tw`ml-2 px-4 py-2`, styles.blinkButton]} 
           onPress={() => toggleConnection(device)}
         >
           <Text style={tw`text-gray-700`}>
@@ -348,17 +349,20 @@ const BLE = () => {
 
   return (
     <View style={[tw`flex-1`, { backgroundColor: "#E8F5E9" }]}>
-      {/* Header */}
-      <Text
-        style={[
-          tw`text-center font-bold text-white my-4 mt-8 shadow-lg`,
-          { backgroundColor: "#419E68", fontSize: 36 },
-        ]}
-      >
-        Settings
-      </Text>
+  {/* Header */}
+  <Text
+    style={[
+      tw`text-center font-bold text-white my-4 mt-8 shadow-lg`,
+      { backgroundColor: "#419E68", fontSize: 36 },
+    ]}
+  >
+    Settings
+  </Text>
 
-      {/* Connected Devices */}
+  {/* Wrapper for both lists, ensuring they take equal height */}
+  <View style={tw`flex-1`}>
+    {/* Connected Devices Section */}
+    <View style={tw`flex-1`}>
       <View style={tw`bg-white shadow-lg`}>
         <Text style={tw`text-lg font-bold text-black rounded-lg p-2`}>
           Connected Devices
@@ -378,16 +382,17 @@ const BLE = () => {
         ListEmptyComponent={
           <Text style={tw`mx-4 my-2`}>No connected devices</Text>
         }
+        contentContainerStyle={{ flexGrow: 1 }}
       />
+    </View>
 
-      {/* Disconnected Devices */}
+    {/* Disconnected Devices Section */}
+    <View style={tw`flex-1`}>
       <View style={tw`bg-white shadow-lg`}>
-        <Text style={tw`text-lg font-bold text-black bg-white rounded-lg p-2`}>
+        <Text style={tw`text-lg font-bold text-black rounded-lg p-2`}>
           Disconnected Devices
         </Text>
-        
       </View>
-      
       <FlatList
         data={disconnectedDevice.map(({ device }) => device)}
         keyExtractor={(item) => item.id}
@@ -401,25 +406,29 @@ const BLE = () => {
         ListEmptyComponent={
           <Text style={tw`mx-4 my-2`}>No disconnected devices</Text>
         }
+        contentContainerStyle={{ flexGrow: 1 }}
       />
-
-      {/* Scan Button */}
-      <Button
-        onPress={startScan}
-        title={scanning ? "Scanning..." : "Start Scan"}
-        disabled={scanning}
-      />
-
-      {/* Loading Modal */}
-      <Modal transparent={true} animationType="fade" visible={isModalVisible}>
-        <View style={styles.modalBackground}>
-          <View style={styles.activityIndicatorWrapper}>
-            <ActivityIndicator animating={true} size="large" color="#419E68" />
-            <Text style={styles.modalText}>{modalText}</Text>
-          </View>
-        </View>
-      </Modal>
     </View>
+  </View>
+
+  {/* Scan Button */}
+  <Button
+    onPress={startScan}
+    title={scanning ? "Scanning..." : "Start Scan"}
+    disabled={scanning}
+  />
+
+  {/* Loading Modal */}
+  <Modal transparent={true} animationType="fade" visible={isModalVisible}>
+    <View style={styles.modalBackground}>
+      <View style={styles.activityIndicatorWrapper}>
+        <ActivityIndicator animating={true} size="large" color="#419E68" />
+        <Text style={styles.modalText}>{modalText}</Text>
+      </View>
+    </View>
+  </Modal>
+</View>
+
   );
 };
 
