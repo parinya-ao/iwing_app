@@ -7,7 +7,7 @@ import {
 	FlatList,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useBleManager } from "./context/blecontext";
+import { useBleManager } from "../../components/context/blecontext";
 import { CHARACTERISTIC } from "@/enum/characteristic";
 import { base64toDecManu } from "@/util/encode";
 import tw from "twrnc";

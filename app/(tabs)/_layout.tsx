@@ -1,9 +1,9 @@
 import React from "react";
-import { ModuleContextProvider } from "./context/context";
-import { BleProvider } from "./context/blecontext";
+import { ModuleContextProvider } from "../../components/context/context";
+import { BleProvider } from "../../components/context/blecontext";
 import { Tabs } from "expo-router";
 import { FontAwesome5, FontAwesome } from "@expo/vector-icons";
-import { IconPositionProvider } from "./IconPositionContext";
+import { IconPositionProvider } from "../../components/IconPositionContext";
 
 export default function TabLayout() {
 	return (

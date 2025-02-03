@@ -8,11 +8,11 @@ import {
 	Dimensions,
 } from "react-native";
 import tw from "twrnc";
-import { useBleManager } from "./(tabs)/context/blecontext";
+import { useBleManager } from "../components/context/blecontext";
 import { Module } from "@/util/buttonType";
 import { MaterialIcons } from "@expo/vector-icons";
 import Draggable from "react-native-draggable";
-import { useIconPosition } from "./(tabs)/IconPositionContext";
+import { useIconPosition } from "../components/IconPositionContext";
 import { Device } from "react-native-ble-plx";
 import { ScreenHeight, ScreenWidth } from "@rneui/themed/dist/config";
 
