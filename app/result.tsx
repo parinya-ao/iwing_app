@@ -553,7 +553,7 @@ const FullResult = ({
     if (times.length > 0) {
       const sum = times.reduce((acc, val) => acc + val, 0);
       const average = sum / times.length;
-      return average / 1000; // Convert to seconds
+      return average; // Convert to seconds
     }
   }
   const handleExport = () => {
@@ -594,12 +594,15 @@ const FullResult = ({
       //     description: "(Avg) Reaction Time",
       //     value: `${averageReactionTime.toFixed(2)} seconds`,
       //   },
-      //   {
-      //     description: "Average Reaction Time",
-      //     value: `${calculateAverageReactionTime(
-      //       reaction_time.slice(0, -1)
-      //     ).toFixed(2)} seconds`,
-      //   },
+      {
+        description: "Average Reaction Time",
+        value:
+          reaction_time && reaction_time.length > 0
+            ? `${calculateAverageReactionTime(reaction_time).toFixed(
+                2
+              )} seconds`
+            : "-",
+      },
       {
         description: "Reaction Time",
         value: `${reaction_time} seconds`,
