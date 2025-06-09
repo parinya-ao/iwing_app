@@ -601,11 +601,14 @@ const FullResult = ({
             ? `${calculateAverageReactionTime(reaction_time).toFixed(
                 2
               )} seconds`
-            : "-",
+            : "- seconds",
       },
       {
         description: "Reaction Time",
-        value: `${reaction_time} seconds`,
+        value:
+          reaction_time && reaction_time.length > 0
+            ? `${reaction_time} seconds`
+            : "- seconds",
       },
 
       { description: "User Hit Count", value: `${userHitCount} times` },
@@ -692,12 +695,15 @@ const FullResult = ({
               {(playTime / 1000).toFixed(2) + " seconds"}
             </Text>
           </View>
-          {/* <View style={styles.row}>
+          <View style={styles.row}>
             <Text style={styles.label}>(Avg) Reaction Time</Text>
             <Text style={styles.output}>
-              {averageReactionTime.toFixed(2) + " seconds"}{" "}
+              {reaction_time.length > 0
+                ? calculateAverageReactionTime(reaction_time).toFixed(2) +
+                  " seconds"
+                : "-" + " seconds"}
             </Text>
-          </View> */}
+          </View>
           <View style={styles.row}>
             <Text style={styles.label}>Hit Count</Text>
             <Text style={styles.output}>{userHitCount + " times"}</Text>
@@ -710,7 +716,7 @@ const FullResult = ({
                   ? Math.min((userHitCount / hitDuration) * 100, 100).toFixed(
                       2
                     ) + " %"
-                  : "N/A"}
+                  : "-"}
               </Text>
             </View>
           )}
