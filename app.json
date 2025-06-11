@@ -1,6 +1,7 @@
 {
   "expo": {
-    "name": "iwing",
+    "jsEngine": "hermes",
+    "name": "iwing button",
     "slug": "button",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -23,13 +24,17 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
         "android.permission.BLUETOOTH",
         "android.permission.BLUETOOTH_ADMIN",
-        "android.permission.BLUETOOTH_CONNECT"
+        "android.permission.BLUETOOTH_CONNECT",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
       ],
       "package": "com.golfpattadon.test",
       "runtimeVersion": "1.0.0"
