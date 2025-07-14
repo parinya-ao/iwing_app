@@ -260,18 +260,34 @@ export const BleProvider: React.FC<{ children: React.ReactNode }> = ({
 		console.log("scanning for peripherals");
 		bleManager.startDeviceScan([], null, (error, device) => {
 			if (error) {
-				console.log(error);
+				console.log("BLE Scan Error:", error);
+				return;
 			}
-			if (device && device.name === "Trainning_PAD") {
-				setAllDevices((prevState: Device[]) => {
-					if (!isDuplicateDevice(prevState, device)) {
-						console.log("ID: ", device.id);
-						console.log("Name: ", device.name);
-						console.log("-----------------------------");
-						return [...prevState, device];
-					}
-					return prevState;
-				});
+			if (device) {
+				// More flexible device filtering - accept devices that might be training pads
+				const deviceName = device.name?.toLowerCase() || "";
+				const isTrainingPad = deviceName.includes("training") || 
+					deviceName.includes("trainning") || 
+					deviceName.includes("pad") || 
+					deviceName.includes("iwing") ||
+					deviceName === "Trainning_PAD".toLowerCase();
+				
+				console.log(`Found device: ${device.name || "Unknown"} (ID: ${device.id})`);
+				
+				// For now, let's add all devices to see what's available
+				// Later, this can be refined based on actual device names found
+				if (device.name) { // Only add devices that have a name
+					setAllDevices((prevState: Device[]) => {
+						if (!isDuplicateDevice(prevState, device)) {
+							console.log("Adding device - ID: ", device.id);
+							console.log("Name: ", device.name);
+							console.log("RSSI: ", device.rssi);
+							console.log("-----------------------------");
+							return [...prevState, device];
+						}
+						return prevState;
+					});
+				}
 			}
 		});
 	};

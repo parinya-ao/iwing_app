@@ -33,6 +33,7 @@ const BLE = () => {
     scanForPeripherals,
     disconnectDevice,
     stopDeviceScan,
+    requestPermissions,
   } = useBleManager();
 
   const [scanning, setScanning] = useState<boolean>(false);
@@ -143,7 +144,19 @@ const BLE = () => {
    */
   const startScan = async () => {
     setDisconnectedDevice([]);
-    console.log("Scanning...");
+    console.log("Requesting permissions...");
+    
+    // Request permissions before scanning
+    const permissionsGranted = await requestPermissions();
+    if (!permissionsGranted) {
+      console.log("Permissions not granted, cannot start scanning");
+      setModalText("Permissions required for BLE scanning");
+      setIsModalVisible(true);
+      setTimeout(() => setIsModalVisible(false), 3000);
+      return;
+    }
+    
+    console.log("Permissions granted, starting scan...");
     setScanning(true);
 
     scanForPeripherals();
