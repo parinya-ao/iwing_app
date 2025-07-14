@@ -257,16 +257,42 @@ export const BleProvider: React.FC<{ children: React.ReactNode }> = ({
 		devices.findIndex((device) => nextDevice.id === device.id) > -1;
 
 	const scanForPeripherals = () => {
-		console.log("scanning for peripherals");
+		console.log("=== Starting BLE Scan ===");
+		
+		// Check Bluetooth state first
+		bleManager.state().then((state) => {
+			console.log("Current Bluetooth state:", state);
+			if (state !== 'PoweredOn') {
+				console.log("Bluetooth is not powered on. Current state:", state);
+				return;
+			}
+		});
+		
 		bleManager.startDeviceScan([], null, (error, device) => {
 			if (error) {
-				console.log(error);
+				console.log("BLE Scan Error:", error);
+				console.log("Error details:", error.message || "No error message");
+				return;
 			}
-			if (device && device.name === "Trainning_PAD") {
+			if (device) {
+				// More flexible device filtering - accept devices that might be training pads
+				const deviceName = device.name?.toLowerCase() || "";
+				const isTrainingPad = deviceName.includes("training") || 
+					deviceName.includes("trainning") || 
+					deviceName.includes("pad") || 
+					deviceName.includes("iwing") ||
+					deviceName === "Trainning_PAD".toLowerCase();
+				
+				console.log(`Found device: ${device.name || "Unknown"} (ID: ${device.id})`);
+				console.log(`Device RSSI: ${device.rssi}, IsConnectable: ${device.isConnectable}`);
+				
+				// For debugging: let's add all devices to see what's available
+				// This includes devices without names to help identify issues
 				setAllDevices((prevState: Device[]) => {
 					if (!isDuplicateDevice(prevState, device)) {
-						console.log("ID: ", device.id);
-						console.log("Name: ", device.name);
+						console.log("Adding device - ID: ", device.id);
+						console.log("Name: ", device.name || "No Name");
+						console.log("RSSI: ", device.rssi);
 						console.log("-----------------------------");
 						return [...prevState, device];
 					}
@@ -277,7 +303,9 @@ export const BleProvider: React.FC<{ children: React.ReactNode }> = ({
 	};
 
 	const stopDeviceScan = async () => {
+		console.log("=== Stopping BLE Scan ===");
 		await bleManager.stopDeviceScan();
+		console.log("BLE scan stopped. Total devices found:", allDevices.length);
 		setAllDevices([]);
 	};
 

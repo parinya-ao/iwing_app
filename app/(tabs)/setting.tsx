@@ -33,6 +33,7 @@ const BLE = () => {
     scanForPeripherals,
     disconnectDevice,
     stopDeviceScan,
+    requestPermissions,
   } = useBleManager();
 
   const [scanning, setScanning] = useState<boolean>(false);
@@ -143,7 +144,19 @@ const BLE = () => {
    */
   const startScan = async () => {
     setDisconnectedDevice([]);
-    console.log("Scanning...");
+    console.log("Requesting permissions...");
+    
+    // Request permissions before scanning
+    const permissionsGranted = await requestPermissions();
+    if (!permissionsGranted) {
+      console.log("Permissions not granted, cannot start scanning");
+      setModalText("Permissions required for BLE scanning");
+      setIsModalVisible(true);
+      setTimeout(() => setIsModalVisible(false), 3000);
+      return;
+    }
+    
+    console.log("Permissions granted, starting scan...");
     setScanning(true);
 
     scanForPeripherals();
@@ -152,6 +165,18 @@ const BLE = () => {
       setScanning(false);
       stopDeviceScan();
       console.log("Scan stopped after 10 seconds.");
+      
+      // Check if any devices were found
+      if (allDevices.length === 0) {
+        console.log("WARNING: No devices found during scan!");
+        console.log("Possible issues:");
+        console.log("1. Bluetooth not enabled");
+        console.log("2. No BLE devices nearby");
+        console.log("3. Permissions not granted");
+        console.log("4. BLE scanning restrictions");
+      } else {
+        console.log(`Success: Found ${allDevices.length} devices`);
+      }
     }, 10000);
   };
 
@@ -338,7 +363,10 @@ const BLE = () => {
         {/* Ensure text takes up remaining space */}
         <View style={tw`ml-4 flex-1`}>
           <Text style={tw`text-base font-bold text-black mb-1`}>
-            Disconnected Device ID: {device.id}
+            Device: {device.name || "Unknown Device"}
+          </Text>
+          <Text style={tw`text-sm text-gray-600 mb-1`}>
+            ID: {device.id}
           </Text>
           <Text style={styles.disconnectedText}>Status: Disconnected</Text>
         </View>
